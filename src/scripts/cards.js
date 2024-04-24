@@ -1,7 +1,3 @@
-const imagePopup = document.querySelector('.popup_type_image');
-const imagePopupCaption = imagePopup.querySelector('.popup__caption');
-const imagePopupImage = imagePopup.querySelector('.popup__image');
-
 export const initialCards = [
     {
       name: "Архыз",
@@ -31,7 +27,7 @@ export const initialCards = [
 
 export const placesList = document.querySelector('.places__list');
 
-export function createCard(cardData, popup) {
+export function createCard(cardData, popup, openCardPopupFunction) {
   const cardTemplate = document.querySelector('#card-template').content;
   const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
 
@@ -39,7 +35,7 @@ export function createCard(cardData, popup) {
   cardElement.querySelector('.card__image').alt = cardData.name;
   cardElement.querySelector('.card__title').textContent = cardData.name;
   cardElement.querySelector('.card__delete-button').addEventListener('click', removeCard);
-  cardElement.querySelector('.card__image').addEventListener('click', (evt) => openCardPopup(evt, popup));
+  cardElement.querySelector('.card__image').addEventListener('click', (evt) => openCardPopupFunction(evt, popup, cardData.name));
   cardElement.querySelector('.card__like-button').addEventListener('click', like);
 
   return cardElement;
@@ -51,10 +47,4 @@ export function removeCard(evt) {
 
 function like(evt) {
   evt.target.classList.toggle('card__like-button_is-active');
-}
-
-function openCardPopup(evt, popup) {
-  imagePopupCaption.textContent = evt.target.parentElement.querySelector('.card__title').textContent;
-  imagePopupImage.src = evt.target.src;
-  popup.openPopup(popupImage);
 }
