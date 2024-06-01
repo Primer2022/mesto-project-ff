@@ -1,0 +1,4 @@
+.card__like-div {
+    display: flex;
+    flex-direction: column;
+}
