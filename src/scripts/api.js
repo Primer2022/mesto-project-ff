@@ -95,7 +95,7 @@ export function removeCard(evt, cardData) {
 
 export async function unLike(evt, cardData, likeCount) {
     const likeElement = evt.target;
-    updatedCard = await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
+    const updatedCard = await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
         method: 'DELETE',
         headers: config.headers
     })
@@ -112,12 +112,12 @@ export async function unLike(evt, cardData, likeCount) {
         });
 
     likeCount.textContent = updatedCard.likes.length;
-    likeElement.classList.toggle('card__like-button_is-active');
+    return updatedCard;
 }
 
 export async function like(evt, cardData, likeCount) {
     const likeElement = evt.target;
-    updatedCard = await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
+    const updatedCard = await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
         method: 'PUT',
         headers: config.headers
     })
@@ -135,5 +135,5 @@ export async function like(evt, cardData, likeCount) {
 
 
     likeCount.textContent = updatedCard.likes.length;
-    likeElement.classList.toggle('card__like-button_is-active');
+    return updatedCard;
 }

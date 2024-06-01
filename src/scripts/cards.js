@@ -36,12 +36,11 @@ async function like(evt, cardData, likeCount) {
   let updatedCard;
 
   if (likeElement.classList.contains('card__like-button_is-active')) {
-    api.unLike(evt, cardData, likeCount);
+    updatedCard = await api.unLike(evt, cardData, likeCount);
   } else {
-    api.like(evt, cardData, likeCount);
+    updatedCard = await api.like(evt, cardData, likeCount);
   }
 
   likeCount.textContent = updatedCard.likes.length;
-
   likeElement.classList.toggle('card__like-button_is-active');
 }
