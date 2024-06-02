@@ -16,22 +16,59 @@ const profileDesc = document.querySelector(".profile__description");
 const imagePopup = document.querySelector(".popup_type_image");
 const imagePopupCaption = imagePopup.querySelector(".popup__caption");
 const imagePopupImage = imagePopup.querySelector(".popup__image");
-const newCardPopup = document.querySelector(".popup_type_new-card");
+const addCardPopup = document.querySelector(".popup_type_new-card");
 const editProfilePopup = document.querySelector(".popup_type_edit");
 const avatarButton = document.querySelector(".profile__image");
 const avatarPopup = document.querySelector(".popup_type_avatar");
-const profile = await api.getProfile();
+const avatarForm = document.forms["avatar"];
+const profile = await api.getProfile().catch(err => console.log(err));
 
 updateProfileElements(profile);
 
-addButton.addEventListener("click", () => modal.openPopup(newCardPopup));
-editButton.addEventListener("click", () => {
+addButton.addEventListener("click", () => modal.openPopup(addCardPopup));
+editButton.addEventListener("click", (evt) => {
+  validation.clearValidation(editProfileForm);
   updateProfileFormValue();
   modal.openPopup(editProfilePopup);
 });
 avatarButton.addEventListener("click", () => modal.openPopup(avatarPopup));
+addCardForm.addEventListener('submit', async function(evt) { 
+  evt.preventDefault();
 
-addCards(await api.getInitialCards());
+  addCardForm.querySelector('.popup__button').textContent = "Сохранение...";
+
+  await handleAddCardFormSubmit();
+  validation.clearValidation(addCardForm);
+  evt.target.reset();
+  modal.closePopup(addCardPopup);
+
+  addCardForm.querySelector('.popup__button').textContent = "Сохранить";
+});
+editProfileForm.addEventListener('submit', async function(evt) { 
+  evt.preventDefault();
+
+  editProfileForm.querySelector('.popup__button').textContent = "Сохранение...";
+
+  await updateProfile(editProfileForm.elements["name"].value, editProfileForm.elements["description"].value);
+  evt.target.reset();
+  modal.closePopup(editProfilePopup);
+
+  editProfileForm.querySelector('.popup__button').textContent = "Сохранить";
+});
+avatarForm.addEventListener('submit', async function(evt) { 
+  evt.preventDefault();
+
+  avatarForm.querySelector('.popup__button').textContent = "Сохранение...";
+
+  await updateProfileAvatar(avatarForm.elements["link"].value);
+  validation.clearValidation(addCardForm);
+  evt.target.reset();
+  modal.closePopup(avatarPopup);
+
+  avatarForm.querySelector('.popup__button').textContent = "Сохранить";
+});
+
+addCards(await api.getInitialCards().catch(err => console.log(err)));
 
 function addCards(cardList) {
   for (let i = 0; i < cardList.length; i++) {
@@ -61,28 +98,32 @@ function updateProfileElements(profile) {
   }
 }
 
-async function updateProfile(updatedProfile) {
-  for (const key of Object.keys(updatedProfile)) {
-    profile[key] = updatedProfile[key];
-  }
+async function updateProfileAvatar(avatar) {
+  profile.avatar = avatar;
+  await api.saveProfile(profile).catch(err => console.log(err));
+  updateProfileElements(profile);
+}
 
-  api.saveAvatar(updatedProfile);
-  api.saveProfile(updatedProfile);
-
-  updateProfileElements(updatedProfile);
+async function updateProfile(name, about) {
+  profile.name = name;
+  profile.about = about;
+  await api.saveProfile(profile).catch(err => console.log(err));
+  updateProfileElements(profile);
 }
 
 const handleAddCardFormSubmit = async () => {
   const text = cardText.value;
   const url = cardUrl.value;
-  const cardData = await api.saveCard(text, url);
+  const cardData = await api.saveCard(text, url).catch(err => console.log(err));
 
   addCardToList(
     cards.createCard(
       profile,
       cardData,
       modal,
-      openCardPopup
+      openCardPopup,
+      cards.like,
+      api.removeCard
     )
   );
 }
@@ -95,4 +136,6 @@ function openCardPopup(evt, popup, imageAlt) {
   popup.openPopup(imagePopup);
 }
 
-validation.enableValidation(modal, handleAddCardFormSubmit, updateProfile);
+validation.enableValidation({
+  formSelector: ".popup__form"
+});

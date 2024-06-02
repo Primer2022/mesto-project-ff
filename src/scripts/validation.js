@@ -1,8 +1,10 @@
 export const toggleButtonState = (inputList, buttonElement) => {
     if (hasInvalidInput(inputList)) {
         buttonElement.classList.add('popup__button-inactive');
+        buttonElement.setAttribute('disabled', true);
     } else {
         buttonElement.classList.remove('popup__button-inactive');
+        buttonElement.removeAttribute('disabled');
     }
 }
 
@@ -16,13 +18,18 @@ export const showInputError = (formElement, inputElement, errorMessage) => {
 export const hideInputError = (formElement, inputElement) => {
     const errorElement = formElement.querySelector(`#popup__input-${inputElement.name}-error`);
     inputElement.classList.remove('popup__input-error');
+
+    if(errorElement == null) {
+        return;
+    }
+
     errorElement.classList.remove('popup__input-error-span_active');
     errorElement.textContent = '';
     inputElement.setCustomValidity('');
 };
 
 export const hasInvalidInput = (inputList) => {
-    return inputList.some((inputElement) => {
+    return Array.from(inputList).some((inputElement) => {
         return !inputElement.validity.valid;
     })
 }
@@ -57,41 +64,22 @@ export const setEventListeners = (formElement) => {
     });
 };
 
-export const enableValidation = (modal, handleAddCardFormSubmit, updateProfile) => {
-    const formList = Array.from(document.querySelectorAll('.popup__form'));
-    formList.forEach((formElement) => {
-        formElement.addEventListener('submit', async function (evt) {
-            evt.preventDefault();
+export const enableValidation = (config) => { 
+    const formList = document.querySelectorAll(config.formSelector);
+    formList.forEach((formElement) => { 
+      formElement.addEventListener('submit', function(evt) { 
+        evt.preventDefault() 
+      })
+      setEventListeners(formElement, config); 
+   })
+ }
 
-            if (checkFormValidation(evt.target.closest('.popup__form'))) return;
+export const clearValidation = (formElement) => {
+    const buttonElement = formElement.querySelector('.popup__button');
 
-            formElement.querySelector('.popup__button').textContent = "Сохранение...";
+    Array.from(formElement.elements).forEach(element => {
+        hideInputError(formElement, element);
+    })
 
-            switch (formElement.getAttribute('name')) {
-                case ("edit-profile"): {
-                    await updateProfile({
-                        name: formElement.elements["name"].value,
-                        about: formElement.elements["description"].value,
-                      });
-                    break;
-                }
-                case ("new-place"): {
-                    await handleAddCardFormSubmit();
-                    break;
-                }
-                case ("avatar"): {
-                    await updateProfile({
-                        avatar: formElement.elements["link"].value
-                    })
-                    break;
-                }
-            }
-
-            evt.target.reset();
-            modal.closePopup(modal.getOpenedPopup());
-            formElement.querySelector('.popup__button').textContent = "Сохранить";
-        });
-
-        setEventListeners(formElement);
-    });
-};
+    toggleButtonState(formElement.querySelectorAll(".popup__input"), buttonElement);
+}

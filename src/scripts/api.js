@@ -6,22 +6,20 @@ const config = {
     }
 }
 
+function handleResponse(res) {
+    if (res.ok) {
+        return res.json();
+    }
+
+    return Promise.reject(`Ошибка: ${res.status}`);
+}
+
 export function getProfile() {
     return fetch(`${config.baseUrl}/users/me`, {
         method: 'GET',
         headers: config.headers
     })
-        .then(res => {
-            if (res.ok) {
-                return res.json();
-            }
-
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
-        .then((result) => { return result })
-        .catch((err) => {
-            console.log(err);
-        });
+        .then((result) => handleResponse(result));
 }
 
 export function getInitialCards() {
@@ -29,17 +27,8 @@ export function getInitialCards() {
         method: 'GET',
         headers: config.headers
     })
-        .then(res => {
-            if (res.ok) {
-                return res.json();
-            }
-
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
-        .then((result) => { return result })
-        .catch((err) => {
-            console.log(err);
-        });
+        .then(res => { return handleResponse(res) })
+        .then((result) => { return result });
 };
 
 export async function saveCard(text, url) {
@@ -51,17 +40,8 @@ export async function saveCard(text, url) {
             link: url
         })
     })
-        .then(res => {
-            if (res.ok) {
-                return res.json();
-            }
-
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
-        .then((result) => { return result })
-        .catch((err) => {
-            console.log(err);
-        });
+        .then(res => { return handleResponse(res) })
+        .then((result) => { return result });
 }
 
 export function saveProfile(profile) {
@@ -93,47 +73,20 @@ export function removeCard(evt, cardData) {
     evt.target.closest('.card').remove();
 }
 
-export async function unLike(evt, cardData, likeCount) {
-    const likeElement = evt.target;
-    const updatedCard = await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
+export async function unLike(cardData) {
+    return await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
         method: 'DELETE',
         headers: config.headers
     })
-        .then(res => {
-            if (res.ok) {
-                return res.json();
-            }
-
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
-        .then((result) => { return result })
-        .catch((err) => {
-            console.log(err);
-        });
-
-    likeCount.textContent = updatedCard.likes.length;
-    return updatedCard;
+        .then(res => { return handleResponse(res) })
+        .then((result) => { return result });
 }
 
-export async function like(evt, cardData, likeCount) {
-    const likeElement = evt.target;
-    const updatedCard = await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
+export async function like(cardData) {
+    return await fetch(`${config.baseUrl}/cards/likes/${cardData._id}`, {
         method: 'PUT',
         headers: config.headers
     })
-        .then(res => {
-            if (res.ok) {
-                return res.json();
-            }
-
-            return Promise.reject(`Ошибка: ${res.status}`);
-        })
-        .then((result) => { return result })
-        .catch((err) => {
-            console.log(err);
-        });
-
-
-    likeCount.textContent = updatedCard.likes.length;
-    return updatedCard;
+        .then(res => { return handleResponse(res) })
+        .then((result) => { return result });
 }
