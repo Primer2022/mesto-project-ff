@@ -1,5 +1,5 @@
 import "../pages/index.css";
-import * as cards from "./cards.js";
+import * as card from "./card.js";
 import * as modal from "./modal.js";
 import * as validation from "./validation.js"
 import * as api from "./api.js";
@@ -22,6 +22,14 @@ const avatarButton = document.querySelector(".profile__image");
 const avatarPopup = document.querySelector(".popup_type_avatar");
 const avatarForm = document.forms["avatar"];
 const profile = await api.getProfile().catch(err => console.log(err));
+const validationConfig = {
+  formSelector: ".popup__form",
+  buttonInactive: "popup__button-inactive",
+  inputError: "popup__input-error",
+  inputErrorSpanActive: "popup__input-error-span_active",
+  input: ".popup__input",
+  button: ".popup__button"
+}
 
 updateProfileElements(profile);
 
@@ -68,17 +76,19 @@ avatarForm.addEventListener('submit', async function(evt) {
   avatarForm.querySelector('.popup__button').textContent = "Сохранить";
 });
 
-addCards(await api.getInitialCards().catch(err => console.log(err)));
+await api.getInitialCards()
+.then((res) => addCards(res))
+.catch(err => console.log(err));
 
 function addCards(cardList) {
   for (let i = 0; i < cardList.length; i++) {
     const cardData = cardList[i];
-    addCardToList(cards.createCard(profile, cardData, modal, openCardPopup));
+    addCardToList(card.createCard(profile, cardData, modal, openCardPopup));
   }
 }
 
-function addCardToList(card) {
-  cards.placesList.prepend(card);
+function addCardToList(newCard) {
+  card.placesList.prepend(newCard);
 }
 
 function updateProfileFormValue() {
@@ -100,15 +110,21 @@ function updateProfileElements(profile) {
 
 async function updateProfileAvatar(avatar) {
   profile.avatar = avatar;
-  await api.saveProfile(profile).catch(err => console.log(err));
-  updateProfileElements(profile);
+  const updatedProfile = await api.saveProfile(profile)
+  .then((res) => res.json())
+  .then((res) => { return res })
+  .catch(err => console.log(err));
+  updateProfileElements(updatedProfile);
 }
 
 async function updateProfile(name, about) {
   profile.name = name;
   profile.about = about;
-  await api.saveProfile(profile).catch(err => console.log(err));
-  updateProfileElements(profile);
+  const updatedProfile = await api.saveProfile(profile)
+  .then((res) => res.json())
+  .then((res) => { return res })
+  .catch(err => console.log(err));
+  updateProfileElements(updatedProfile);
 }
 
 const handleAddCardFormSubmit = async () => {
@@ -117,12 +133,12 @@ const handleAddCardFormSubmit = async () => {
   const cardData = await api.saveCard(text, url).catch(err => console.log(err));
 
   addCardToList(
-    cards.createCard(
+    card.createCard(
       profile,
       cardData,
       modal,
       openCardPopup,
-      cards.like,
+      card.like,
       api.removeCard
     )
   );
@@ -136,6 +152,4 @@ function openCardPopup(evt, popup, imageAlt) {
   popup.openPopup(imagePopup);
 }
 
-validation.enableValidation({
-  formSelector: ".popup__form"
-});
+validation.enableValidation(validationConfig);

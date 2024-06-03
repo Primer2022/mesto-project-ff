@@ -70,7 +70,6 @@ export function removeCard(evt, cardData) {
         method: 'DELETE',
         headers: config.headers
     });
-    evt.target.closest('.card').remove();
 }
 
 export async function unLike(cardData) {
